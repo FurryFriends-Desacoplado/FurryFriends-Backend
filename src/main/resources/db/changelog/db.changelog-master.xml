@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Cambios para las tablas sin claves foráneas -->
+    <changeSet id="1" author="postgres">
+        <createTable tableName="agendamiento">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="fecha" type="timestamp"/>
+            <!-- Aquí puedes agregar otras columnas según sea necesario -->
+        </createTable>
+
+        <createTable tableName="criticas">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="comentario" type="varchar(255)"/>
+            <column name="puntaje" type="int"/>
+        </createTable>
+
+        <createTable tableName="estados_pedido">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="nombre" type="varchar(100)"/>
+        </createTable>
+
+        <!-- Repite lo mismo para las demás tablas sin FK -->
+        <createTable tableName="inventario">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="cantidad" type="int"/>
+        </createTable>
+
+        <createTable tableName="mascota">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="nombre" type="varchar(100)"/>
+            <column name="tipo" type="varchar(50)"/>
+        </createTable>
+
+        <createTable tableName="medios_pago">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="nombre" type="varchar(100)"/>
+        </createTable>
+
+        <createTable tableName="orden_compra">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="fecha" type="timestamp"/>
+        </createTable>
+
+        <createTable tableName="pago">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="monto" type="decimal(10,2)"/>
+        </createTable>
+
+        <createTable tableName="personal_access_token">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="token" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Cambios para las tablas con claves foráneas -->
+    <changeSet id="2" author="tu_usuario">
+        <createTable tableName="producto">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="nombre" type="varchar(100)"/>
+            <column name="precio" type="decimal(10,2)"/>
+        </createTable>
+
+        <createTable tableName="producto_proveedor">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="producto_id" type="int">
+                <constraints foreignKeyName="fk_producto_proveedor_producto" references="producto(id)"/>
+            </column>
+            <column name="proveedor_id" type="int">
+                <constraints foreignKeyName="fk_producto_proveedor_proveedor" references="proveedor(id)"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="proveedor">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="nombre" type="varchar(100)"/>
+        </createTable>
+
+        <createTable tableName="servicio">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="nombre" type="varchar(100)"/>
+        </createTable>
+
+        <createTable tableName="user">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="varchar(100)"/>
+            <column name="password" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="venta">
+            <column name="id" type="serial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="fecha" type="timestamp"/>
+            <column name="monto" type="decimal(10,2)"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
