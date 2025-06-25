@@ -1,11 +1,7 @@
 package com.furryfriends.FurryFriends_Backend.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -19,7 +15,7 @@ import java.time.LocalDate;
 @Table(name = "users")
 public class User {
     @Id
-    @ColumnDefault("nextval('users_id_seq')")
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Autogenera el id
     @Column(name = "id", nullable = false)
     private Long id;
 
@@ -56,7 +52,7 @@ public class User {
     @Column(name = "foto_perfil")
     private String fotoPerfil;
 
-    @Column(name = "experiencia", length = Integer.MAX_VALUE)
+    @Column(name = "experiencia", length = 65535) // Usar 65535 para TEXT en MySQL
     private String experiencia;
 
     @Column(name = "numero_mascotas")
@@ -67,8 +63,4 @@ public class User {
 
     @Column(name = "updated_at")
     private Instant updatedAt;
-
-    @Column(name = "trial932", length = Integer.MAX_VALUE)
-    private String trial932;
-
 }

@@ -8,9 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-
-    // Puedes agregar métodos adicionales de consulta si lo necesitas, como:
     Optional<User> findByEmail(String email);
-
     Optional<User> findByNumeroDocumento(String numeroDocumento);
+    boolean existsByEmail(String email);
 }
