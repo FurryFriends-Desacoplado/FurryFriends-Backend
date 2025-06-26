@@ -36,7 +36,7 @@ public class UserController {
     }
 
     // Crear un nuevo usuario
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<String> createUser(@RequestBody User user) {
         User newUser = userService.createUser(user);
         if (newUser != null) {
