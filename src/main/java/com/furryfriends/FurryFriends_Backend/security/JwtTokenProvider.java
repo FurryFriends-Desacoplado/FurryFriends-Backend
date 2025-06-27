@@ -19,7 +19,7 @@ public class JwtTokenProvider {
 
     private SecretKey secretKey;
 
-    private final long EXPIRATION_TIME = 86400000; // 1 día en ms
+    private final long EXPIRATION_TIME = 3600000; // 1 hora en ms
 
     @PostConstruct
     public void init() {

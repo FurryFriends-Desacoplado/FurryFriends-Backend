@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "*")  // Permite solicitudes desde cualquier origen
+@CrossOrigin(origins = "*") // Permite solicitudes desde cualquier origen
 public class UserController {
 
     @Autowired
@@ -27,16 +27,13 @@ public class UserController {
     // Obtener un usuario por ID
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        User user = userService.getUserById(id).orElse(null);
-        if (user != null) {
-            return new ResponseEntity<>(user, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);  // Si no lo encuentra
-        }
+        return userService.getUserById(id)
+                .map(user -> new ResponseEntity<>(user, HttpStatus.OK))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    // Crear un nuevo usuario
-    @PostMapping("/create")
+    // Crear un nuevo usuario (mejor sin "/create")
+    @PostMapping
     public ResponseEntity<String> createUser(@RequestBody User user) {
         User newUser = userService.createUser(user);
         if (newUser != null) {
@@ -60,12 +57,9 @@ public class UserController {
     // Eliminar un usuario
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        User existingUser = userService.getUserById(id).orElse(null);
-        if (existingUser == null) {
-            return new ResponseEntity<>("Usuario no encontrado", HttpStatus.NOT_FOUND);
-        }
-
-        userService.deleteUser(id);
-        return new ResponseEntity<>("Usuario eliminado exitosamente", HttpStatus.OK);
+        boolean deleted = userService.deleteUser(id);
+        return deleted
+                ? new ResponseEntity<>("Usuario eliminado exitosamente", HttpStatus.OK)
+                : new ResponseEntity<>("Usuario no encontrado", HttpStatus.NOT_FOUND);
     }
 }

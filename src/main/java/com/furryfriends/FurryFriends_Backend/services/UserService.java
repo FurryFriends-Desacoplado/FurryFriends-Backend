@@ -64,11 +64,14 @@ public class UserService implements UserDetailsService {
         throw new UsernameNotFoundException("Usuario no encontrado con id: " + id);
     }
 
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+    public boolean deleteUser(Long id) {
+        if (userRepository.existsById(id)) {
+            userRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
-    // Método agregado para validar existencia de usuario por email
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
@@ -77,7 +80,6 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con el email: " + username));
-
         return new CustomUserDetails(user);
     }
 }
