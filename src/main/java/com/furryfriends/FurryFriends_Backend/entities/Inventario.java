@@ -38,7 +38,4 @@ public class Inventario {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    @Column(name = "trial936", length = Integer.MAX_VALUE)
-    private String trial936;
-
 }

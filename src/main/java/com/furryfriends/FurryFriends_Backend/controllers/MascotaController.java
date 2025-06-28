@@ -37,9 +37,9 @@ public class MascotaController {
     public ResponseEntity<String> createMascota(@RequestBody Mascota mascota) {
         Boolean result = mascotaService.create(mascota);
         if (result) {
-            return new ResponseEntity<>("Mascota created successfully", HttpStatus.CREATED);
+            return new ResponseEntity<>("Mascota creada exitosamente", HttpStatus.CREATED);
         } else {
-            return new ResponseEntity<>("Failed to create Mascota", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Error al crear la Mascota", HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -47,16 +47,16 @@ public class MascotaController {
     public ResponseEntity<String> updateMascota(@PathVariable Long id, @RequestBody Mascota mascota) {
         Mascota existingMascota = mascotaService.findById(id);
         if (existingMascota == null) {
-            return new ResponseEntity<>("Mascota not found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Mascota no encontrada", HttpStatus.NOT_FOUND);
         }
 
         mascota.setId(id);
         Boolean result = mascotaService.update(mascota);
 
         if (result) {
-            return new ResponseEntity<>("Mascota updated successfully", HttpStatus.OK);
+            return new ResponseEntity<>("Mascota actualizada exitosamente", HttpStatus.OK);
         } else {
-            return new ResponseEntity<>("Failed to update Mascota", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Error al actualizar la Mascota", HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -64,7 +64,7 @@ public class MascotaController {
     public ResponseEntity<String> deleteMascota(@PathVariable Long id) {
         Mascota existingMascota = mascotaService.findById(id);
         if (existingMascota == null) {
-            return new ResponseEntity<>("Mascota not found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Mascota no encontrada", HttpStatus.NOT_FOUND);
         }
 
         Boolean result = mascotaService.delete(existingMascota);

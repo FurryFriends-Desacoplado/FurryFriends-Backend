@@ -1,6 +1,8 @@
 package com.furryfriends.FurryFriends_Backend.services;
 
+import com.furryfriends.FurryFriends_Backend.dto.UpdateUser;
 import com.furryfriends.FurryFriends_Backend.entities.User;
+import com.furryfriends.FurryFriends_Backend.enums.EnrollmentStatus;
 import com.furryfriends.FurryFriends_Backend.repositories.UserRepository;
 import com.furryfriends.FurryFriends_Backend.security.CustomUserDetails;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,10 +10,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
+
 
 @Service
 public class UserService implements UserDetailsService {
@@ -39,30 +44,50 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
-    public User updateUser(Long id, User userDetails) {
-        Optional<User> existingUser = userRepository.findById(id);
-        if (existingUser.isPresent()) {
-            User user = existingUser.get();
-            user.setNombre(userDetails.getNombre());
-            user.setApellido(userDetails.getApellido());
-            user.setFechaNacimiento(userDetails.getFechaNacimiento());
-            user.setTelefono(userDetails.getTelefono());
-            user.setEmail(userDetails.getEmail());
-            user.setTipoDocumento(userDetails.getTipoDocumento());
-            user.setNumeroDocumento(userDetails.getNumeroDocumento());
-            if (userDetails.getPassword() != null && !userDetails.getPassword().isBlank()) {
-                user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
-            }
-            user.setRole(userDetails.getRole());
-            user.setDireccion(userDetails.getDireccion());
-            user.setFotoPerfil(userDetails.getFotoPerfil());
-            user.setExperiencia(userDetails.getExperiencia());
-            user.setNumeroMascotas(userDetails.getNumeroMascotas());
-            user.setUpdatedAt(Instant.now());
-            return userRepository.save(user);
+    @Transactional
+    public void updateUser(Long id, UpdateUser dto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con id: " + id));
+
+        // Imprime antes de modificar para ver el estado actual
+        System.out.println("Antes update: enrollmentStatus = " + user.getEnrollmentStatus());
+
+        user.setNombre(dto.getNombre());
+        user.setApellido(dto.getApellido());
+        user.setFechaNacimiento(dto.getFechaNacimiento());
+        user.setTelefono(dto.getTelefono());
+        user.setEmail(dto.getEmail());
+        user.setDireccion(dto.getDireccion());
+        user.setTipoDocumento(dto.getTipoDocumento());
+        user.setNumeroDocumento(dto.getNumeroDocumento());
+        user.setRole(dto.getRole());
+        user.setFotoPerfil(dto.getFotoPerfil());
+        user.setExperiencia(dto.getExperiencia());
+        user.setNumeroMascotas(dto.getNumeroMascotas());
+
+        // Imprime después de modificar para asegurarte que no cambió
+        System.out.println("Después update: enrollmentStatus = " + user.getEnrollmentStatus());
+
+        user.setUpdatedAt(Instant.now());
+
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
-        throw new UsernameNotFoundException("Usuario no encontrado con id: " + id);
+
+        // El save no es necesario si el método está marcado @Transactional y usas JPA,
+        // pero puedes agregar userRepository.save(user) si quieres asegurarte.
     }
+
+
+
+
+    // Método corregido para actualizar enrollmentStatus usando cast explícito en la consulta
+    @Transactional
+    public boolean updateEnrollmentStatus(Long userId, EnrollmentStatus newStatus) {
+        int updated = userRepository.updateEnrollmentStatus(userId, newStatus.name());
+        return updated > 0;
+    }
+
 
     public boolean deleteUser(Long id) {
         if (userRepository.existsById(id)) {
@@ -81,5 +106,13 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con el email: " + username));
         return new CustomUserDetails(user);
+    }
+
+    public User findById(Long id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
+    public User save(User user) {
+        return userRepository.save(user);
     }
 }

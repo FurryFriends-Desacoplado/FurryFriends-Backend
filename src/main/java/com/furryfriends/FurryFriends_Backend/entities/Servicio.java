@@ -38,7 +38,4 @@ public class Servicio {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    @Column(name = "trial932", length = Integer.MAX_VALUE)
-    private String trial932;
-
 }

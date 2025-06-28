@@ -1,6 +1,9 @@
 package com.furryfriends.FurryFriends_Backend.controllers;
 
+import com.furryfriends.FurryFriends_Backend.dto.UpdateUser;
 import com.furryfriends.FurryFriends_Backend.entities.User;
+import com.furryfriends.FurryFriends_Backend.enums.EnrollmentStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.furryfriends.FurryFriends_Backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -45,12 +49,15 @@ public class UserController {
 
     // Actualizar un usuario existente
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody User user) {
-        User updatedUser = userService.updateUser(id, user);
-        if (updatedUser != null) {
-            return new ResponseEntity<>("Usuario actualizado exitosamente", HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("Usuario no encontrado", HttpStatus.NOT_FOUND);
+    public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody UpdateUser dto) {
+        try {
+            userService.updateUser(id, dto);
+            return ResponseEntity.ok("Usuario actualizado exitosamente");
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();  // Muy recomendable para saber el error exacto en consola
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar usuario");
         }
     }
 
@@ -61,5 +68,21 @@ public class UserController {
         return deleted
                 ? new ResponseEntity<>("Usuario eliminado exitosamente", HttpStatus.OK)
                 : new ResponseEntity<>("Usuario no encontrado", HttpStatus.NOT_FOUND);
+    }
+
+    //Desactivar un usuario
+    @PatchMapping("/{id}/enrollment-status")
+    public ResponseEntity<?> updateEnrollmentStatus(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        String statusStr = request.get("enrollmentStatus");
+        try {
+            EnrollmentStatus newStatus = EnrollmentStatus.valueOf(statusStr);
+            boolean updated = userService.updateEnrollmentStatus(id, newStatus);
+            if (!updated) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+            }
+            return ResponseEntity.ok("Estado actualizado");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Estado inválido: " + statusStr);
+        }
     }
 }

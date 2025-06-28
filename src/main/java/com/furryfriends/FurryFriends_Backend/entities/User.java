@@ -1,5 +1,6 @@
 package com.furryfriends.FurryFriends_Backend.entities;
 
+import com.furryfriends.FurryFriends_Backend.enums.EnrollmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -57,6 +58,10 @@ public class User {
 
     @Column(name = "numero_mascotas")
     private Integer numeroMascotas;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "enrollment_status", columnDefinition = "enrollment_status_enum", updatable = false)
+    private EnrollmentStatus enrollmentStatus;
 
     @Column(name = "created_at")
     private Instant createdAt;

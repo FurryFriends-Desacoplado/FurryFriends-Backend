@@ -69,4 +69,9 @@ public class CustomUserDetails implements UserDetails {
     public String getApellido() {
         return user.getApellido();
     }
+
+    // Aquí corregimos el tipo de retorno, usando `name()` para convertir el enum a String
+    public String getEnrollmentStatus() {
+        return user.getEnrollmentStatus().name();  // Usamos `name()` para obtener el nombre del enum como String
+    }
 }
