@@ -73,9 +73,6 @@ public class UserService implements UserDetailsService {
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
-
-        // El save no es necesario si el método está marcado @Transactional y usas JPA,
-        // pero puedes agregar userRepository.save(user) si quieres asegurarte.
     }
 
 

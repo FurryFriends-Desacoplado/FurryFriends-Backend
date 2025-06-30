@@ -24,9 +24,15 @@ public class RegisterController {
         if (userRepository.existsByEmail(user.getEmail())) {
             return ResponseEntity.badRequest().body("{\"message\": \"El correo ya está registrado.\"}");
         }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
+
+        // ⚠️ Este campo NO lo seteamos, para que use el valor por defecto de la BD
+        user.setEnrollmentStatus(null);
+
+        System.out.println(">>> enrollmentStatus antes de guardar: " + user.getEnrollmentStatus());
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
     }

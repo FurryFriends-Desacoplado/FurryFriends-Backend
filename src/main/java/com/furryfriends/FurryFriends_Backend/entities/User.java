@@ -60,7 +60,7 @@ public class User {
     private Integer numeroMascotas;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "enrollment_status", columnDefinition = "enrollment_status_enum", updatable = false)
+    @Column(name = "enrollment_status", columnDefinition = "enrollment_status_enum default 'Activa'", insertable = false, updatable = false)
     private EnrollmentStatus enrollmentStatus;
 
     @Column(name = "created_at")
