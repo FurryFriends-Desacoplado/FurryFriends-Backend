@@ -1,11 +1,8 @@
 package com.furryfriends.FurryFriends_Backend.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.furryfriends.FurryFriends_Backend.enums.ProductStatus;
+import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -18,8 +15,9 @@ import java.time.Instant;
 @Entity
 @Table(name = "productos")
 public class Producto {
+
     @Id
-    @ColumnDefault("nextval('productos_id_seq')")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
@@ -43,5 +41,9 @@ public class Producto {
 
     @Column(name = "updated_at")
     private Instant updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "product_status", columnDefinition = "varchar(10) default 'Activo'")
+    private ProductStatus productStatus = ProductStatus.ACTIVO;
 
 }
