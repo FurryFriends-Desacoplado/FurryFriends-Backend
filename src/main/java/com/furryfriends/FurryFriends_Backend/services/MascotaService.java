@@ -30,20 +30,22 @@ public class MascotaService implements IMascotaService {
 
     @Override
     public Mascota findById(Long id) {
-        return mascotaRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("Mascota no encontrada con id: " + id));
+        Optional<Mascota> mascota = mascotaRepository.findById(id);
+        return mascota.orElse(null);
+    }
+
+    public List<Mascota> findByUserId(Long userId) {
+        return mascotaRepository.findByUserId(userId);
     }
 
     @Override
     public Boolean create(Mascota mascota) {
         try {
-            if (mascota.getCreatedAt() == null) {
-                mascota.setCreatedAt(Instant.now());
-            }
-            mascota.setUpdatedAt(Instant.now());
             mascotaRepository.save(mascota);
             return true;
         } catch (Exception e) {
+            System.out.println("Error al guardar mascota:");
+            e.printStackTrace();
             return false;
         }
     }
@@ -97,15 +99,17 @@ public class MascotaService implements IMascotaService {
     }
 
     public Mascota registrarMascota(MascotaDTO mascotaDTO, Long usuarioId) {
-        // Verificar que el usuario existe y tiene rol propietario
         User user = userRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if (!user.getRole().equals("propietario")) {
+        if (user.getRole() == null || !user.getRole().equalsIgnoreCase("PROPIETARIO")) {
             throw new RuntimeException("El usuario no tiene el rol de propietario");
         }
 
-        // Crear la mascota y asociarla con el usuario
+        if (mascotaDTO.getStatusPet() == null) {
+            mascotaDTO.setStatusPet(StatusPet.Activa);
+        }
+
         Mascota mascota = new Mascota();
         mascota.setNombre(mascotaDTO.getNombre());
         mascota.setEdad(mascotaDTO.getEdad());
@@ -114,6 +118,10 @@ public class MascotaService implements IMascotaService {
         mascota.setColor(mascotaDTO.getColor());
         mascota.setInfoMedica(mascotaDTO.getInfoMedica());
         mascota.setUser(user);
+        mascota.setStatusPet(mascotaDTO.getStatusPet());
+
+        mascota.setCreatedAt(Instant.now());
+        mascota.setUpdatedAt(Instant.now());
 
         return mascotaRepository.save(mascota);
     }

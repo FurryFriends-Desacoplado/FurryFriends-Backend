@@ -23,5 +23,7 @@ public interface IMascotaService {
 
     Boolean save(Mascota mascota);
 
-    Mascota registrarMascota(MascotaDTO mascotaDTO, Long usuarioId);
+    Mascota registrarMascota(MascotaDTO mascotaDTO, Long userId);
+
+    List<Mascota> findByUserId(Long userId);
 }

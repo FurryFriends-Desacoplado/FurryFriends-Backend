@@ -1,13 +1,13 @@
 package com.furryfriends.FurryFriends_Backend.utils;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.furryfriends.FurryFriends_Backend.security.CustomUserDetails;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.PostConstruct;
 import javax.crypto.SecretKey;
 import java.util.Base64;
 import java.util.Date;
@@ -20,6 +20,8 @@ public class JwtUtils {
 
     private SecretKey secretKey;
 
+    private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 1 día en milisegundos
+
     @PostConstruct
     public void init() {
         byte[] keyBytes = Base64.getDecoder().decode(base64SecretKey);
@@ -29,12 +31,33 @@ public class JwtUtils {
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateJwtToken(UserDetails userDetails) {
+    public String generateToken(Authentication authentication) {
+        CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
+
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
+                .setSubject(userPrincipal.getUsername()) // correo
+                .claim("userId", userPrincipal.getUser().getId()) // id como claim
+                .claim("role", userPrincipal.getUser().getRole()) // puedes agregar más si quieres
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 día
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
+    }
+
+    public Long getUserIdFromToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Number userId = claims.get("userId", Number.class);
+            return userId != null ? userId.longValue() : null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("No se pudo extraer el ID del token");
+        }
     }
 }

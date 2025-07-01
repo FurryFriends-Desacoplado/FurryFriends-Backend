@@ -25,10 +25,14 @@ public class JwtTokenProvider {
     public void init() {
         System.out.println("jwt.secret.base64 = '" + base64SecretKey + "'");
         byte[] keyBytes = Base64.getDecoder().decode(base64SecretKey);
-        System.out.println("Clave JWT base64 cargada, longitud en bits: " + (keyBytes.length * 8));
+        int keyLength = keyBytes.length * 8;
+        System.out.println("Clave JWT base64 cargada, longitud en bits: " + keyLength);
+        if (keyLength < 512) {
+            throw new IllegalArgumentException("La clave debe tener al menos 512 bits (64 bytes) para HS512.");
+        }
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
-    
+
     public String generateToken(Authentication authentication) {
         CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
 

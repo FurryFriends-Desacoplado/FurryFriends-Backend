@@ -6,15 +6,12 @@ import com.furryfriends.FurryFriends_Backend.entities.Mascota;
 import com.furryfriends.FurryFriends_Backend.enums.StatusPet;
 import com.furryfriends.FurryFriends_Backend.mappers.MascotaMapper;
 import com.furryfriends.FurryFriends_Backend.services.interfaces.IMascotaService;
+import com.furryfriends.FurryFriends_Backend.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import java.nio.charset.StandardCharsets;
-
 
 import java.util.List;
 import java.util.Map;
@@ -26,6 +23,9 @@ public class MascotaController {
 
     @Autowired
     private IMascotaService mascotaService;
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
     @GetMapping
     public ResponseEntity<List<MascotaDTO>> getAllMascotas() {
@@ -69,42 +69,30 @@ public class MascotaController {
     @PatchMapping("/{id}/status-pet")
     public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         try {
-            // Obtener el valor de "statusPet" desde el cuerpo de la solicitud
             String statusPetString = body.get("statusPet");
-            System.out.println("Estado recibido: " + statusPetString);  // Log para verificar el valor
+            System.out.println("Estado recibido: " + statusPetString);
 
             if (statusPetString == null || statusPetString.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El estado de la mascota es obligatorio.");
             }
 
-            // Verificar si el valor recibido es válido
             if ("Activa".equalsIgnoreCase(statusPetString) || "Inactiva".equalsIgnoreCase(statusPetString)) {
-                // Si es válido, procesamos el estado
-                StatusPet statusPet = StatusPet.valueOf(statusPetString);  // Aquí no es necesario convertir a mayúsculas, ya que está en el formato correcto.
+                StatusPet statusPet = StatusPet.valueOf(statusPetString);
 
-                System.out.println("Estado convertido a enum: " + statusPet);  // Log de la conversión
+                System.out.println("Estado convertido a enum: " + statusPet);
 
-                // Buscar la mascota por ID
                 Mascota mascota = mascotaService.findById(id);
-
-                // Actualizar el estado de la mascota
                 mascota.setStatusPet(statusPet);
-
-                // Guardar la mascota con el nuevo estado
                 mascotaService.save(mascota);
 
-                return ResponseEntity.ok(mascota);  // Responde con la mascota actualizada
+                return ResponseEntity.ok(mascota);
             } else {
-                // Si el estado no es válido, devolver un error 400
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Estado de mascota inválido.");
             }
         } catch (Exception e) {
-            // Manejo de errores generales
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor");
         }
     }
-
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteMascota(@PathVariable Long id) {
@@ -125,28 +113,32 @@ public class MascotaController {
     @PostMapping("/registerMascotas")
     public ResponseEntity<String> registrarMascota(@RequestBody MascotaDTO mascotaDTO,
                                                    @RequestHeader("Authorization") String token) {
-        // Extraer el userId del token
-        Long usuarioId = getUserIdFromToken(token);
-
         try {
-            mascotaService.registrarMascota(mascotaDTO, usuarioId);
+            System.out.println("🔐 Token recibido en el backend:");
+            System.out.println(token);
+
+            // ✅ Elimina el prefijo "Bearer " si está presente
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+
+            Long userId = jwtUtils.getUserIdFromToken(token);
+            if (userId == null) {
+                throw new RuntimeException("No se pudo extraer el ID del token");
+            }
+
+            mascotaService.registrarMascota(mascotaDTO, userId);
             return ResponseEntity.ok("Mascota registrada exitosamente");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al registrar mascota: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Error al registrar mascota: " + e.getMessage());
         }
     }
 
-    private Long getUserIdFromToken(String token) {
-        // Eliminar "Bearer " si está presente
-        token = token.replace("Bearer ", "");
-
-        // Parsear el token
-        Claims claims = Jwts.parser()
-                .setSigningKey("your-secret-key".getBytes(StandardCharsets.UTF_8)) // Tu clave secreta para firmar el JWT
-                .parseClaimsJws(token)
-                .getBody();
-
-        // Obtener el `userId` que está como `subject` en el token
-        return Long.parseLong(claims.getSubject()); // Suponiendo que el `subject` es el `userId`
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Mascota>> getMascotasByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(mascotaService.findByUserId(userId));
     }
+
 }
